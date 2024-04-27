@@ -1,7 +1,7 @@
 import { fetchJSON } from "./util.js";
 
 declare global {
-  var checkMail: (labelMap: LabelMap) => void;
+  var checkMail: (labelMap: LabelMap, properties: GoogleAppsScript.Properties.Properties) => void;
 }
 
 const lastCheckedKey = "GmailDiscordNotification_lastChecked";
@@ -20,9 +20,9 @@ interface LabelMap {
 
 const myMailAddress = Session.getActiveUser().getEmail();
 
-global.checkMail = (labelMap: LabelMap) => {
+global.checkMail = (labelMap: LabelMap, properties: GoogleAppsScript.Properties.Properties) => {
   const lastChecked = parseInt(
-    PropertiesService.getScriptProperties().getProperty(lastCheckedKey) || "0"
+    properties.getProperty(lastCheckedKey) || "0"
   );
 
   const threads = GmailApp.search(`in:inbox after:${lastChecked}`);
@@ -37,7 +37,7 @@ global.checkMail = (labelMap: LabelMap) => {
         from: message.getFrom(),
         to: message.getTo(),
         subject: message.getSubject(),
-        body: message.getBody()
+        body: message.getPlainBody()
       };
     });
 
@@ -71,7 +71,7 @@ global.checkMail = (labelMap: LabelMap) => {
     });
   }
 
-  PropertiesService.getScriptProperties().setProperty(
+  properties.setProperty(
     lastCheckedKey,
     (new Date().getTime() / 1000).toFixed(0)
   );

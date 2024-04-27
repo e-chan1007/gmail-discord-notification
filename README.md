@@ -21,7 +21,7 @@ const labelMap = {
   // ...
 };
 
-GmailDiscordNotification.checkMail(labelMap);
+GmailDiscordNotification.checkMail(labelMap, PropertiesService.getScriptProperties());
 ```
 
 Where `labelMap` is an object with the following structure:
