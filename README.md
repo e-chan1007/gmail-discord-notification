@@ -1,0 +1,46 @@
+# gmail-discord-notification
+
+A simple Gmail notification for Discord.
+
+## Installation
+
+Project ID: `1zQ6wfsTUaecxmqNSijQyJ2fVh8PG4VEMc7zbGdSxBmAmdPAUD3zsWG0f`
+
+## Usage
+```js
+const labelMap = {
+  default: {
+    webhookURL: 'https://discord.com/api/webhooks/...',
+    discordOptions: {
+      avatarURL: 'https://cdn.discordapp.com/avatars/...',
+    }
+  },
+  "Label Name": {
+    webhookURL: 'https://discord.com/api/webhooks/...',
+  },
+  // ...
+};
+
+GmailDiscordNotification.checkMail(labelMap);
+```
+
+Where `labelMap` is an object with the following structure:
+```ts
+interface LabelRule {
+  webhookURL: string;
+  ignore?: boolean;
+  discordOptions?: object;
+  discordEmbedOptions?: object;
+}
+
+interface LabelMap {
+  default: LabelRule;
+  [key: string]: Partial<LabelRule>;
+}
+
+const labelMap = { default: { /* ... */ }} as const satisfies LabelMap;
+```
+
+## Tips
+- Append `thread_id` query parameter to the webhook URL to send messages to the thread.
+  - `https://discord.com/api/webhooks/...?thread_id=...`

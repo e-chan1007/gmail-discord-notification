@@ -1,0 +1,20 @@
+{
+  "name": "gmail-discord-notification",
+  "type": "module",
+  "packageManager": "yarn@4.1.1",
+  "scripts": {
+    "build": "node build.js",
+    "push": "clasp push",
+    "open": "clasp open",
+    "deploy": "yarn build && yarn push"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.0.2",
+    "@google/clasp": "^2.4.2",
+    "@types/gapi": "^0.0.47",
+    "@types/google-apps-script": "^1.0.83",
+    "esbuild": "^0.18.20",
+    "esbuild-gas-plugin": "^0.8.0",
+    "typescript": "^5.4.5"
+  }
+}
