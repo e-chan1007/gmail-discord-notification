@@ -43,12 +43,23 @@ global.checkMail = (labelMap: LabelMap, properties: GoogleAppsScript.Properties.
 
     threadData.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    threadData.forEach((data) => {
+    const rateLimitPerMinute = 50;
+    const shouldSleep = threadData.length > rateLimitPerMinute;
+
+    for(const data of threadData) {
       const labelRule = Object.entries(labelMap).find(([key]) =>
         data.labels.some((label) => label.getName() === key)
       )?.[1] || labelMap.default;
       if(labelRule.ignore) return;
       const webhookURL = labelRule.webhookURL || labelMap.default.webhookURL;
+      let title = data.subject || "(件名なし)";
+      if (title.length > 0xFF - 3) {
+        title = title.slice(0, 0xFF - 3) + "...";
+      }
+      let body = data.body;
+      if (body.length > 0xFFF - 3) {
+        body = body.slice(0, 0xFFF - 3) + "...";
+      }
       const result = fetchJSON(webhookURL, {
         method: "post",
         contentType: "application/json",
@@ -56,9 +67,9 @@ global.checkMail = (labelMap: LabelMap, properties: GoogleAppsScript.Properties.
           embeds: [
             {
               type: "rich",
-              title: `${data.subject}`,
+              title,
               url: `https://mail.google.com/mail/u/${myMailAddress}/#inbox/${data.id}`,
-              description: data.body,
+              description: body,
               timestamp: data.date.toISOString(),
               author: { name: data.from },
               ...(labelRule.discordEmbedOptions || labelMap.default.discordEmbedOptions),
@@ -67,8 +78,9 @@ global.checkMail = (labelMap: LabelMap, properties: GoogleAppsScript.Properties.
           ...(labelRule.discordOptions || labelMap.default.discordOptions),
         }),
       });
-      console.log(result);
-    });
+      if(shouldSleep) Utilities.sleep(60e3 / rateLimitPerMinute);
+      else Utilities.sleep(0.5e3);
+    }
   }
 
   properties.setProperty(
