@@ -31,7 +31,7 @@ GmailDiscordNotification.checkMail(options, PropertiesService.getScriptPropertie
 ```
 
 Where `options` is an array with the following structure:
-```
+```ts
 interface Option {
   default?: boolean;
 	query?: string;
