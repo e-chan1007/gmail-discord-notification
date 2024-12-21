@@ -34,11 +34,11 @@ Where `options` is an array with the following structure:
 ```ts
 interface Option {
   default?: boolean;
-	query?: string;
+  query?: string;
   webhookURL?: string;
-	ignore?: boolean;
-	discordOptions?: object;
-	discordEmbedOptions?: object;
+  ignore?: boolean;
+  discordOptions?: object;
+  discordEmbedOptions?: object;
 }
 ```
 
