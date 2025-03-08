@@ -15,6 +15,7 @@ interface NotifyOptions {
 	ignore?: boolean;
 	discordOptions?: object;
 	discordEmbedOptions?: object;
+  prependSendTo?: boolean;
 }
 
 interface Option extends NotifyOptions {
@@ -144,13 +145,20 @@ global.checkMail = (
 		if (title.length > 0xff - 3) {
 			title = `${title.slice(0, 0xff - 3)}...`;
 		}
-		let body = `\`\`\`To: ${data.to}`;
-		if (data.cc) body += `\nCc: ${data.cc}`;
-		body += `\`\`\`\n${data.body}`;
+		let body = "";
+    if(option.prependSendTo) {
+      body += `\`\`\`To: ${data.to}`;
+		  if (data.cc) body += `\nCc: ${data.cc}`;
+      body += "```\n"
+    }
+		body += data.body;
 		if (body.length > 0xfff - 3) {
 			body = `${body.slice(0, 0xfff - 3)}...`;
 		}
-		fetchJSON(webhookURL, {
+    let requestURL = webhookURL;
+    if(!requestURL.includes("?")) requestURL += "?wait=true";
+    else requestURL = (requestURL + "&wait=true").replace(/\?&/, "?").replace(/&&/, "&");
+		const result = fetchJSON(requestURL, {
 			method: "post",
 			contentType: "application/json",
 			payload: JSON.stringify({
@@ -169,6 +177,7 @@ global.checkMail = (
 				...(option.discordOptions || defaultOption.discordOptions),
 			}),
 		});
+    console.log(result);
 		if (shouldSleep) Utilities.sleep(60e3 / rateLimitPerMinute);
 		else Utilities.sleep(0.5e3);
 	}

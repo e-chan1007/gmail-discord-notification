@@ -39,6 +39,7 @@ interface Option {
   ignore?: boolean;
   discordOptions?: object;
   discordEmbedOptions?: object;
+  prependSendTo?: boolean;
 }
 ```
 
