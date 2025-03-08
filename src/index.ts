@@ -49,12 +49,6 @@ global.checkMail = (
 	baseOptions: Option[],
 	properties: GoogleAppsScript.Properties.Properties,
 ) => {
-	const updateLastChecked = () =>
-		properties.setProperty(
-			lastCheckedKey,
-			(new Date().getTime() / 1000).toFixed(0),
-		);
-
 	const options = baseOptions.map((option) => ({ ...option }));
 	const hasDefault = options.some((option) => option.default);
 	if (!hasDefault) {
@@ -74,8 +68,14 @@ global.checkMail = (
 	const lastChecked = Number.parseInt(
 		properties.getProperty(lastCheckedKey) || "0",
 	);
+	const nextCheck = new Date().getTime() / 1000;
+	const updateLastChecked = () =>
+		properties.setProperty(
+			lastCheckedKey,
+			nextCheck.toFixed(0),
+		);
 
-	const allThreads = GmailApp.search(`in:inbox after:${lastChecked}`);
+	const allThreads = GmailApp.search(`in:inbox after:${lastChecked} before:${nextCheck - 1}`);
 
 	if (!allThreads || allThreads.length === 0) return updateLastChecked();
 

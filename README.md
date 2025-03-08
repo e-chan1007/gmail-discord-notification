@@ -42,41 +42,6 @@ interface Option {
 }
 ```
 
-## Usage(~v10)
-```js
-const labelMap = {
-  default: {
-    webhookURL: 'https://discord.com/api/webhooks/...',
-    discordOptions: {
-      avatarURL: 'https://cdn.discordapp.com/avatars/...',
-    }
-  },
-  "Label Name": {
-    webhookURL: 'https://discord.com/api/webhooks/...',
-  },
-  // ...
-};
-
-GmailDiscordNotification.checkMail(labelMap, PropertiesService.getScriptProperties());
-```
-
-Where `labelMap` is an object with the following structure:
-```ts
-interface LabelRule {
-  webhookURL: string;
-  ignore?: boolean;
-  discordOptions?: object;
-  discordEmbedOptions?: object;
-}
-
-interface LabelMap {
-  default: LabelRule;
-  [key: string]: Partial<LabelRule>;
-}
-
-const labelMap = { default: { /* ... */ }} as const satisfies LabelMap;
-```
-
 ## Tips
 - Append `thread_id` query parameter to the webhook URL to send messages to the thread.
   - `https://discord.com/api/webhooks/...?thread_id=...`
