@@ -28,6 +28,7 @@ interface ThreadData {
 	date: Date;
 	from: string;
 	to: string;
+	cc: string;
 	subject: string;
 	body: string;
 	searchedBy: Option;
@@ -66,16 +67,18 @@ global.checkMail = (
 	options.splice(options.indexOf(defaultOption), 1);
 
 	const lastChecked = Number.parseInt(
-		properties.getProperty(lastCheckedKey) || "0",
+		properties.getProperty(lastCheckedKey) || `${new Date().getTime() / 1000}`,
 	);
-	const nextCheck = new Date().getTime() / 1000;
+	const nextCheck = Math.floor(new Date().getTime() / 1000);
 	const updateLastChecked = () =>
 		properties.setProperty(
 			lastCheckedKey,
 			nextCheck.toFixed(0),
 		);
 
-	const allThreads = GmailApp.search(`in:inbox after:${lastChecked} before:${nextCheck - 1}`);
+  const inboxQuery = `in:inbox`;
+  const dateRangeQuery = `after:${lastChecked} before:${nextCheck - 1}`;
+	const allThreads = GmailApp.search(`${inboxQuery} ${dateRangeQuery}`);
 
 	if (!allThreads || allThreads.length === 0) return updateLastChecked();
 
@@ -83,9 +86,12 @@ global.checkMail = (
 
 	for (const option of options) {
 		if (!option.query) continue;
-		const threads = GmailApp.search(
-			`in:inbox after:${lastChecked} ${option.query}`,
-		);
+    const hasInQuery = option.query.split(" ").some(v => v.startsWith("in:"));
+		const threads =  hasInQuery ? GmailApp.search(
+			`${dateRangeQuery} ${option.query}`,
+		) : GmailApp.search(
+      `${inboxQuery} ${dateRangeQuery} ${option.query}`,
+    );
 		if (!threads || threads.length === 0) continue;
 		const appendThreadData = threads
 			.map((thread) => {
@@ -97,13 +103,14 @@ global.checkMail = (
 					date: message.getDate() as Date,
 					from: message.getFrom(),
 					to: message.getTo(),
+					cc: message.getCc(),
 					subject: message.getSubject(),
 					body: message.getPlainBody(),
 					searchedBy: option,
 				};
 			})
 			.filter((data) => data !== null)
-      .filter(data => !threadData.some((d) => d.id === data.id));
+      .filter(data => threadData.every((d) => d.id !== data.id));
 		threadData.push(...appendThreadData);
 	}
 
@@ -118,6 +125,7 @@ global.checkMail = (
 			date: message.getDate() as Date,
 			from: message.getFrom(),
 			to: message.getTo(),
+			cc: message.getCc(),
 			subject: message.getSubject(),
 			body: message.getPlainBody(),
 			searchedBy: defaultOption,
@@ -136,7 +144,9 @@ global.checkMail = (
 		if (title.length > 0xff - 3) {
 			title = `${title.slice(0, 0xff - 3)}...`;
 		}
-		let body = data.body;
+		let body = `\`\`\`To: ${data.to}`;
+		if (data.cc) body += `\nCc: ${data.cc}`;
+		body += `\`\`\`\n${data.body}`;
 		if (body.length > 0xfff - 3) {
 			body = `${body.slice(0, 0xfff - 3)}...`;
 		}
